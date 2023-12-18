@@ -649,3 +649,82 @@ class startenv{
         return(x<=event.offsetX&&event.offsetX<=x+width&&y<=event.offsetY&&event.offsetY<=y+height)
     }
 }
+class game{
+    constructor(canvas){
+        this.start=false;
+        this.gameover=false;
+        this.height=canvas.height;
+        this.width=canvas.width;
+        this.player=new player(this);
+        this.keys=0;
+        this.ui=new UI(this);
+        this.input=new input(this);
+        this.bullet=new bullet(this);
+        this.debug=false;
+        this.enemy=new enemy(this);
+        this.background=new backGround(this);
+        this.bulletrem=new bulletrem();
+        this.enteredEnemy=0;
+        this.particles=[];
+        this.bullets=[];
+        this.pauseenv=new pause(this);
+        this.startenv=new startenv(this);
+        try{
+            localStorage.setItem("highestscore",localStorage.getItem("highestscore"));
+        }
+        catch(error){
+            localStorage.setItem("highestscore",0);
+        }
+    }
+    update(deltatime){
+        if(this.pauseenv.status===false){
+            this.background.update();
+            this.player.update(deltatime);
+            if(this.start===true)this.enemy.update(deltatime);
+            this.background.layer4.update();
+        }
+        this.particles.forEach(particle=>{
+            particle.update();
+        })
+        this.bullets.forEach(bullet=>{
+            bullet.update();
+        })
+        this.bulletrem.update(deltatime);
+        if(parseInt(localStorage.getItem("highestscore"))<this.player.score)
+            localStorage.setItem("highestscore",this.player.score);
+    }
+    draw(context){
+        this.background.draw(context);   
+        if(this.gameover===false)this.player.draw(context);
+        this.enemy.draw(context);  
+        this.background.layer4.draw(context);
+        this.ui.draw(context);
+        this.particles.forEach(particle=>{
+            particle.draw(context);
+        })
+        this.bullets.forEach(bullet=>{
+            bullet.draw(context);
+        })
+        if(this.start===true)this.bulletrem.draw(context);
+        if(this.start===false||this.gameover===true)this.startenv.draw(context);
+        this.pauseenv.draw(context);
+        //for debugging only
+       // this.particle.draw(context);
+    }
+    render(context,deltatime){
+        this.update(deltatime);
+        this.draw(context)
+    }
+}
+window.addEventListener('load',function(){
+    game=new game(canvas);
+    var lasttime=0
+    function animate(timeStamp){
+        var deltatime=timeStamp-lasttime;
+        lasttime=timeStamp;
+        context.clearRect(0,0,canvas.width,canvas.height);
+        game.render(context,deltatime);
+        requestAnimationFrame(animate)
+    }
+    animate(0);  
+})
