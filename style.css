@@ -14,4 +14,9 @@ body{
     border: solid black;
     transform:translate(-50%,-50%);
 }
-
+#player, #bullet,#layer1,#layer2
+,#layer3,#layer4,#enemy1,#enemy2,#drone,
+#whale,#gameover,#gears,
+#heart,#lucky,#restartbtn,#playbtn,#pausebtn{
+    display: none;
+}
