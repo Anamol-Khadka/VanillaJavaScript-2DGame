@@ -398,3 +398,50 @@ class lucky extends enemy{
         this.level=this.framey;
     }
 }
+class backGround{
+    constructor(game){
+        this.game=game;
+        this.layers=[];
+        this.particles=[];
+        this.layer1=document.getElementById("layer1");
+        this.layer2=document.getElementById("layer2");
+        this.layer3=document.getElementById("layer3");
+        this.layer4=document.getElementById("layer4");
+        this.layers.push(new layer(this.game,this.layer1,0.2));
+        this.layers.push(new layer(this.game,this.layer2,0.5));
+        this.layers.push(new layer(this.game,this.layer3,1));
+        this.layer4=new layer(this.game,this.layer4,1.5);
+    }
+    update(){
+        this.layers.forEach(layer=>{
+            layer.update();
+        })
+    }
+    draw(context){
+        this.layers.forEach(layer=>{
+            layer.draw(context);
+        })
+    }
+
+}
+class layer{
+    constructor(game,image,speed){
+        this.game=game;
+        this.image=image;
+        this.speed=speed;
+        this.x=0;
+        this.y=0;
+        this.framex=0;
+        this.framey=0
+    }
+    update(){
+        if(this.x<=(-this.image.width)){
+          this.x=0;
+       }
+        this.x-=this.speed;
+    }
+    draw(context){
+        context.drawImage(this.image,this.x,this.y,this.image.width,this.image.height);
+        context.drawImage(this.image,this.x+this.image.width,this.y,this.image.width,this.image.height);
+    }
+}
