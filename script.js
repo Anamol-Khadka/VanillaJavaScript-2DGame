@@ -445,3 +445,207 @@ class layer{
         context.drawImage(this.image,this.x+this.image.width,this.y,this.image.width,this.image.height);
     }
 }
+class input{
+    constructor(game){
+        this.game=game;
+        this.arrowUp=0;
+        this.arrowDown=0;
+        this.null=0;
+        this.space=0;
+        window.addEventListener('keydown',e=>{  
+            if(this.game.start===true){
+                if(e.key==="ArrowUp")
+                this.game.keys=1;
+            else if(e.key==="ArrowDown")
+                this.game.keys=-1;
+            if(e.key===" "){
+                if(this.game.bulletrem.bulletremaining>0){
+                    if(this.game.pauseenv.status===false){
+                        this.game.bullets.push(new bullet(this.game));
+                        this.game.bulletrem.bulletremaining--;
+                    }
+                }
+            }
+            if(e.key==='d')
+                this.game.debug=!this.game.debug;
+            } 
+
+        })
+    }
+
+}
+class UI{
+    constructor(game){
+    this.game=game;
+    this.heart=document.getElementById('heart');
+    this.heartsize=15;
+    this.heartx=50;
+    this.hearty=15;
+    }
+    draw(context){
+        this.scoreDisplay(context);
+        this.displayAfterGameover(context);
+        this.drawheart(context);
+    }
+    scoreDisplay(context){
+        this.scoreX=this.game.width*0.5;
+        this.scoreY=32;
+        context.fillStyle="yellow";
+        context.font='25px Arial';
+        context.textAlign='center';
+        if(this.game.start===true)
+            context.fillText("SCORE  "+this.game.player.score,this.scoreX,this.scoreY,100,100);
+        context.font='50px Arial';
+        context.fillStyle='white';
+        context.textAlign='center';
+    }
+    drawheart(context){
+        var i;
+        for(i=0;i<this.game.player.life-this.game.player.collision;i++){
+            context.drawImage(this.heart,i*(this.heartsize+3)+this.heartx,this.hearty
+            ,this.heartsize,this.heartsize);
+        }
+    }
+    displayAfterGameover(context){
+        if(this.game.gameover===true){
+            context.fillText('YOUR SCORE '+this.game.player.score,0.5*this.game.width,0.4*this.game.height);
+        }
+    }
+}
+class pause{
+    constructor(game){
+        this.game=game;
+        this.status=false;
+        this.playbtn=document.getElementById("playbtn");
+        this.restartbtn=document.getElementById("restartbtn");
+        this.pausebtn=document.getElementById("pausebtn");
+        this.restartbtnsize=170;
+        this.restartbtnx=0.25*this.game.width;
+        this.restartbtny=0.15*this.game.width;
+        this.playbtnsize=210;
+        this.playbtnx=0.5*this.game.width;
+        this.playbtny=0.135*this.game.width;
+        this.playbtnexpand=false;
+        this.restartbtnexpand=false;
+        this.leftpausex=10;
+        this.leftpausey=15;
+        this.leftpausesize=35;
+        this.leftpausebtnexpand=false;
+        this.expandvalue=3;
+        this.pauseBtnReact();
+        this.leftpauseBtnReact();
+    }
+    pauseBtnReact(){
+  
+        document.getElementById('canvas1').addEventListener('mousemove',e=>{
+                  //this is for restart button
+            if(this.checkBoxEvent(e,this.restartbtnx,this.restartbtny,this.restartbtnsize,this.restartbtnsize))
+                    this.restartbtnexpand=true;
+            else
+                this.restartbtnexpand=false;
+                //this is for resume button
+            if(this.checkBoxEvent(e,this.playbtnx,this.playbtny,this.playbtnsize,this.playbtnsize))
+                this.playbtnexpand=true;
+            else
+                this.playbtnexpand=false;
+        })
+        document.getElementById('canvas1').addEventListener('click',e=>{
+            if(this.status===true){
+                //this is for restart button
+                if(this.checkBoxEvent(e,this.restartbtnx,this.restartbtny,this.restartbtnsize,this.restartbtnsize)){
+                    this.game.gameover=true;
+                    this.game.player.selfDestroy();
+                    this.game.enemy.selfDestroy();
+                    this.game.start=false;
+                    this.status=false;
+                }
+                // this is for resume button
+                if(this.checkBoxEvent(e,this.playbtnx,this.playbtny,this.playbtnsize,this.playbtnsize))
+                    this.status=false;
+            }
+
+        })
+    }
+    leftpauseBtnReact(){
+        document.getElementById('canvas1').addEventListener('mousemove',e=>{
+            if(this.checkBoxEvent(e,this.leftpausex,this.leftpausey,this.leftpausesize,this.leftpausesize))
+                this.leftpausebtnexpand=true;
+            else
+                this.leftpausebtnexpand=false;
+        })
+        document.getElementById("canvas1").addEventListener('click',e=>{
+            if(this.game.start===true){
+               if(this.checkBoxEvent(e,this.leftpausex,this.leftpausey,this.leftpausesize,this.leftpausesize))
+                    this.game.pauseenv.status=!this.game.pauseenv.status;
+            }
+    })
+    }
+    draw(context){
+        if(this.status===true){
+            //this is for restart button drawing
+            if(this.restartbtnexpand===true)this.drawbtn(this.restartbtn,this.restartbtnx,this.restartbtny,
+                this.restartbtnsize+this.expandvalue,this.restartbtnsize+this.expandvalue);
+            else this.drawbtn(this.restartbtn,this.restartbtnx,this.restartbtny,
+                this.restartbtnsize,this.restartbtnsize);
+            //this is for resume button drawing
+            if(this.playbtnexpand===true)this.drawbtn(this.playbtn,this.playbtnx,this.playbtny,
+                this.playbtnsize+this.expandvalue,this.playbtnsize+this.expandvalue);
+            else this.drawbtn(this.playbtn,this.playbtnx,this.playbtny,
+                this.playbtnsize,this.playbtnsize);
+        }
+        //this is for left pause button drawing
+        if(this.status===false&&this.game.start===true){
+            if(this.game.debug===true)context.strokeRect(this.pauseP,this.pauseP,this.pauseSize,this.pauseSize);
+            if(this.leftpausebtnexpand===true)
+                this.drawbtn(this.pausebtn,this.leftpausex,this.leftpausey,this.leftpausesize+2,this.leftpausesize+2);
+            else 
+                this.drawbtn(this.pausebtn,this.leftpausex,this.leftpausey,this.leftpausesize,this.leftpausesize)
+        }
+    }
+    drawbtn(img,x,y,width,height){
+        const ctx=document.getElementById('canvas1').getContext('2d');
+        ctx.drawImage(img,x,y,width,height);
+    }
+    checkBoxEvent(event,x,y,width,height){
+        return(x<=event.offsetX&&event.offsetX<=x+width&&y<=event.offsetY&&event.offsetY<=y+height)
+    }
+}
+class startenv{
+    constructor(game){
+        this.game=game;
+        this.startbtnx=0.4*this.game.width;
+        this.startbtny=0.4*this.game.height;
+        this.startbtnsize=200;
+        this.startbtnexpand=false;
+        this.startbtnReact();
+        this.startbtnimg=document.getElementById("playbtn");
+        this.expandvalue=3;
+    }
+    startbtnReact(){
+        document.getElementById('canvas1').addEventListener('mousemove',e=>{
+            if(this.checkBoxEvent(e,this.startbtnx,this.startbtny,this.startbtnsize,this.startbtnsize))
+                this.startbtnexpand=true;
+            else
+                this.startbtnexpand=false;
+        })
+        document.getElementById('canvas1').addEventListener('click',e=>{
+            console.log("sajan shrestha");
+            if(this.game.start===false){
+                if(this.checkBoxEvent(e,this.startbtnx,this.startbtny,this.startbtnsize,this.startbtnsize)){
+                    this.game.player.initilize();
+                    this.game.start=true;
+                    this.game.gameover=false;
+                }
+            }
+        })
+    }
+    draw(context){
+        if(this.startbtnexpand===true)context.drawImage(this.startbtnimg,this.startbtnx,this.startbtny,
+            this.startbtnsize+this.expandvalue,this.startbtnsize+this.expandvalue);
+        else context.drawImage(this.startbtnimg,this.startbtnx,this.startbtny,
+            this.startbtnsize,this.startbtnsize);
+    }
+    checkBoxEvent(event,x,y,width,height){
+        return(x<=event.offsetX&&event.offsetX<=x+width&&y<=event.offsetY&&event.offsetY<=y+height)
+    }
+}
