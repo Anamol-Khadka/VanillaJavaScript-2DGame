@@ -1,1 +1,17 @@
+* {
+    margin:0;
+    border:0;
+    box-sizing: border-box;
+}
+body{
+    height:100vh;
+    background-color: black;
+}
+#canvas1{
+    position:absolute;
+    top:50%;
+    left: 50%;
+    border: solid black;
+    transform:translate(-50%,-50%);
+}
 
