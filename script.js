@@ -204,3 +204,197 @@ class particle{
         this.game.particles.splice(this.game.particles.indexOf(this),1);
     }
 }
+class enemy{
+    constructor(game){
+        this.game=game;
+        this.enemies=[];
+        this.x=this.game.width;
+        this.y=0;
+        this.time=0;
+        this.timeInterval=2000;
+    }
+    update(deltatime){
+        this.time+=deltatime;
+        if(this.time>this.timeInterval){
+            this.time=0;
+            this.addEnemy();
+        }
+        this.enemiesUpdate(deltatime);
+        this.enemiesCheckDestroy();
+        
+    }
+    draw(context){
+        this.enemies.forEach(enemy=>{
+            if(this.game.debug===true)context.strokeRect(enemy.x,enemy.y,enemy.width,enemy.height);
+            context.drawImage(enemy.image,enemy.framex*enemy.width,enemy.framey*enemy.height,
+                enemy.width,enemy.height,enemy.x,enemy.y,enemy.width,enemy.height);
+        })
+    }
+    enemiesUpdate(deltatime){
+        this.enemies.forEach(enemy=>{
+            enemy.x-=enemy.speed;
+            if(enemy.framex===enemy.framemax)
+                enemy.framex=0
+            else
+                enemy.framex++;
+        })
+    }
+    enemiesCheckDestroy(){
+        this.enemies.forEach(enemy=>{
+            this.game.bullets.forEach(bullet=>{
+                if(this.checkCollision(bullet,enemy)){
+                    bullet.destroy();
+                    this.game.particles.push(new particle(this.game,enemy.x,enemy.y,enemy.width,enemy.height));
+                    enemy.collision++;
+                }
+                if(bullet.levelup===true){
+                    if(enemy.collision>=1){
+                        this.destroy(enemy);
+                        this.game.player.score++;
+                    }
+                }
+            })
+            if(enemy.collision>=enemy.collisionlimit){
+                if(enemy.type==="lucky"){
+                    if(enemy.level===0)this.game.bulletrem.bulletremaining=this.game.bulletrem.bulletmax;
+                    else this.game.player.luckypoint++;
+                }
+                if(enemy.type==="whale")this.game.player.score++;
+                this.destroy(enemy);
+                this.game.player.score++;
+            }
+            if(enemy.x<-enemy.width){
+                this.destroy(enemy);
+                this.game.player.enemyEscape++;
+            }
+        })
+    }
+
+    addEnemy(){
+        var x=Math.random();
+        if(x<0.2)
+            this.enemies.push(new enemy1());
+        else if(x<0.4)
+            this.enemies.push(new enemy2());
+        else if(x<0.6)
+            this.enemies.push(new drone());
+        else if(x<0.8)
+            this.enemies.push(new whale());
+        else
+            this.enemies.push(new lucky());
+    }
+    destroy(enemy){
+        for(var i=0;i<enemy.numberOfParticles;i++){
+            this.game.particles.push(new particle(this.game,enemy.x,enemy.y,enemy.width,enemy.height));
+        }
+        this.enemies.splice(this.enemies.indexOf(enemy),1);
+    }
+    checkCollision(rect1,rect2){
+        return(rect1.y<rect2.y+rect2.height&&rect1.y+rect1.height>rect2.y
+            &&rect1.x<rect2.x+rect2.width&&rect1.x+rect1.width>rect2.x);
+    }
+    selfDestroy(){
+        var i;
+        this.enemies.forEach(enemy=>{
+            for(i=0;i<enemy.numberOfParticles;i++)
+                this.game.particles.push(new particle(this.game,enemy.x,enemy.y,enemy.width,enemy.height));
+                this.enemies=[];
+        })
+    }
+}
+class enemy1 extends enemy{
+    constructor(){
+        super(game);
+        this.v=Math.random();
+        if(this.v<0.5)this.y=this.v*this.game.height+this.game.player.miny;
+        else this.y=this.v*this.game.height*0.7-this.game.player.miny;
+        this.height=169;
+        this.width=228;
+        this.framex=0;
+        this.framemax=37;
+        this.framey=(this.v<0.3)?0:((this.v<0.6)?1:2);
+        this.collision=0;
+        this.collisionlimit=3;
+        this.speed=3;
+        this.image=document.getElementById("enemy1");
+        this.numberOfParticles=3;
+        this.type="enemy1";
+    }
+}
+class enemy2 extends enemy{
+    constructor(){
+        super(game);
+        this.v=Math.random();
+        if(this.v<0.5)this.y=this.v*this.game.height+this.game.player.miny;
+        else this.y=this.v*this.game.height*0.8-this.game.player.miny;
+        this.width=213;
+        this.height=165;
+        this.framex=0;
+        this.framemax=37;
+        this.framey=(Math.random()>0.5)?0:1;
+        this.collision=0;
+        this.collisionlimit=3;
+        this.speed=(this.framey==0)?2:3;
+        this.image=document.getElementById("enemy2");
+        this.numberOfParticles=3;
+        this.type="enemy2";
+    }
+}
+class drone extends enemy{
+    constructor(){
+        super(game);
+        this.v=Math.random();
+        if(this.v<0.5)this.y=this.v*this.game.height+this.game.player.miny;
+        else this.y=this.v*this.game.height*0.8-this.game.player.miny;
+        this.width=115;
+        this.height=95;
+        this.framex=0;
+        this.framemax=37;
+        this.framey=(Math.random()>0.5)?0:1;
+        this.collision=0;
+        this.collisionlimit=1;
+        this.speed=(this.framey==0)?4:3;
+        this.image=document.getElementById("drone");
+        this.numberOfParticles=1;
+        this.type="drone";
+    }
+}
+class whale extends enemy{
+    constructor(){
+        super(game);
+        this.v=Math.random();
+        if(this.v<0.5)this.y=this.v*this.game.height+this.game.player.miny;
+        else this.y=this.v*this.game.height*0.8-this.game.player.miny;
+        this.width=400;
+        this.height=227;
+        this.framex=0;
+        this.framemax=37;
+        this.framey=0;
+        this.collision=0;
+        this.collisionlimit=10;
+        this.speed=2;
+        this.image=document.getElementById("whale");
+        this.numberOfParticles=20;
+        this.type="whale";
+    }
+}
+class lucky extends enemy{
+    constructor(){
+        super(game);
+        this.v=Math.random();
+        if(this.v<0.5)this.y=this.v*this.game.height+this.game.player.miny;
+        else this.y=this.v*this.game.height*0.7-this.game.player.miny;
+        this.height=95;
+        this.width=99;
+        this.framex=0;
+        this.framemax=37;
+        this.framey=(this.v<0.3)?0:((this.v<0.6)?0:1);
+        this.collision=0;
+        this.collisionlimit=3;
+        this.speed=3;
+        this.image=document.getElementById("lucky");
+        this.numberOfParticles=3;
+        this.type="lucky";
+        this.level=this.framey;
+    }
+}
